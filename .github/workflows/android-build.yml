@@ -1,0 +1,110 @@
+name: Android CI
+
+# This workflow builds the app and (on pushes to main) runs unit tests.
+#
+# NOTE ON THE GRADLE WRAPPER: this repository does not currently commit a
+# gradlew/gradlew.bat script or gradle-wrapper.jar (only
+# gradle/wrapper/gradle-wrapper.properties, which just records the intended
+# Gradle version). Generating a correct gradle-wrapper.jar requires running
+# `gradle wrapper` with a real Gradle installation, which isn't something
+# that can be safely hand-written -- shipping a wrong/corrupt jar would be
+# worse than not having one. Rather than depend on a wrapper that may not
+# exist, this workflow uses the official gradle/actions/setup-gradle action
+# with an explicit `gradle-version`, which downloads and caches a verified
+# Gradle distribution and lets every step below just call `gradle` directly.
+#
+# If a Gradle Wrapper is added to the repository later (recommended for
+# local development -- run `gradle wrapper --gradle-version 9.2.1` once from
+# a machine with Gradle installed, then commit the generated gradlew,
+# gradlew.bat, and gradle/wrapper/gradle-wrapper.jar), the `run:` steps below
+# can be simplified from `gradle <task>` to `./gradlew <task>` and the
+# `gradle-version` input to setup-gradle can be removed (it will then read
+# the version from gradle-wrapper.properties automatically).
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch: {}
+
+# Avoid redundant runs when new commits land on the same PR/branch while an
+# earlier run is still in progress.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build & unit test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v6
+
+      # AGP 9.1.x requires JDK 17 (see app/build.gradle.kts / AGP compatibility docs).
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          # Matches gradle/wrapper/gradle-wrapper.properties. Update both
+          # together if the project's Gradle version changes.
+          gradle-version: '9.2.1'
+
+      # app/build.gradle.kts' "debugConfig" signing config expects a
+      # debug.keystore file at the repo root (see .gitignore -- it is
+      # deliberately never committed). Android Studio generates one
+      # automatically on first run for local development; CI has no such
+      # automatic step, so an equivalent throwaway debug keystore is
+      # generated here with the same well-known Android debug credentials
+      # the build script already expects (storePassword/keyAlias/keyPassword
+      # = "android"/"androiddebugkey"/"android"). This is not a secret --
+      # it's the standard, publicly-documented Android debug signing
+      # convention -- so there is nothing sensitive being generated here.
+      - name: Generate debug keystore for CI signing
+        run: |
+          keytool -genkeypair -v \
+            -keystore debug.keystore \
+            -storetype JKS \
+            -alias androiddebugkey \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass android -keypass android \
+            -dname "CN=Android Debug,O=Android,C=US"
+
+      - name: Lint (debug variant)
+        # Reports upload as an artifact below regardless of outcome; this
+        # step doesn't fail the whole job on lint errors so unit tests and
+        # the build itself still run and get reported even if lint alone
+        # has issues to fix. Remove continue-on-error once the project's
+        # lint baseline is clean and you want lint failures to fail CI.
+        continue-on-error: true
+        run: gradle lintDebug --stacktrace
+
+      - name: Run unit tests
+        run: gradle testDebugUnitTest --stacktrace
+
+      - name: Build debug APK
+        run: gradle assembleDebug --stacktrace
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: folia-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload test & lint reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: |
+            app/build/reports/
+          retention-days: 14

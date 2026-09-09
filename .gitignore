@@ -1,0 +1,34 @@
+*.iml
+.gradle
+.kotlin
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+debug.keystore
+
+# .env is not read by anything in this project (no secrets-management
+# plugin is configured), kept ignored defensively in case one is added
+# later.
+.env
+
+# Signing material -- never commit real keystores or credentials
+*.jks
+*.keystore
+
+# Crash/heap dumps that can be large and contain sensitive memory contents
+*.hprof
+*.hprof.tmp
+
+# Generated app icon/output folders some IDE plugins create
+/app/release
+/app/debug
