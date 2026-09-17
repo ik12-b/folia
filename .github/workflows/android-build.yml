@@ -14,7 +14,7 @@ name: Android CI
 # Gradle distribution and lets every step below just call `gradle` directly.
 #
 # If a Gradle Wrapper is added to the repository later (recommended for
-# local development -- run `gradle wrapper --gradle-version 9.2.1` once from
+# local development -- run `gradle wrapper --gradle-version 9.7.1` once from
 # a machine with Gradle installed, then commit the generated gradlew,
 # gradlew.bat, and gradle/wrapper/gradle-wrapper.jar), the `run:` steps below
 # can be simplified from `gradle <task>` to `./gradlew <task>` and the
@@ -55,7 +55,7 @@ jobs:
         with:
           # Matches gradle/wrapper/gradle-wrapper.properties. Update both
           # together if the project's Gradle version changes.
-          gradle-version: '9.2.1'
+          gradle-version: '9.7.1'
 
       # app/build.gradle.kts' "debugConfig" signing config expects a
       # debug.keystore file at the repo root (see .gitignore -- it is
