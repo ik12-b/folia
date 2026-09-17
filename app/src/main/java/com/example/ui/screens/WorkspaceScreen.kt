@@ -32,10 +32,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.AutoGraph
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Crop
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.Fullscreen
@@ -504,7 +502,15 @@ fun WorkspaceScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(38.dp)
+                        // Raised from 38dp to 48dp -- Android's documented
+                        // minimum touch target size. At 38dp, the icon
+                        // buttons inside (dark mode toggle, pin bars,
+                        // overflow menu) had to be squeezed to 28dp each,
+                        // well under half the recommended size, making
+                        // them genuinely hard to tap accurately on a real
+                        // phone screen with a finger (as opposed to a
+                        // mouse cursor in a preview/emulator).
+                        .height(48.dp)
                         .padding(horizontal = 8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
@@ -512,7 +518,14 @@ fun WorkspaceScreen(
                     // Left: Back button & Title
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.clickable { onBackToLibrary() }
+                        // Vertical padding added so the tap target for
+                        // this frequently-used back navigation reaches
+                        // closer to Android's 48dp minimum -- previously
+                        // it had no padding at all, so the tappable area
+                        // was only as tall as the 16dp icon/text content.
+                        modifier = Modifier
+                            .clickable { onBackToLibrary() }
+                            .padding(vertical = 14.dp)
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -563,7 +576,15 @@ fun WorkspaceScreen(
                                             workspacePagerState.animateScrollToPage(0)
                                         }
                                     }
-                                    .padding(horizontal = 10.dp, vertical = 4.dp),
+                                    // Vertical padding raised from 4dp to
+                                    // 12dp: with the 13dp icon and 11sp
+                                    // text inside, the old padding gave a
+                                    // total tap height of ~24dp for a
+                                    // frequently-used tab switcher --
+                                    // roughly half Android's documented
+                                    // 48dp minimum touch target, easy to
+                                    // mis-tap on a real phone screen.
+                                    .padding(horizontal = 10.dp, vertical = 12.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
@@ -597,7 +618,7 @@ fun WorkspaceScreen(
                                             workspacePagerState.animateScrollToPage(1)
                                         }
                                     }
-                                    .padding(horizontal = 10.dp, vertical = 4.dp),
+                                    .padding(horizontal = 10.dp, vertical = 12.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
@@ -620,17 +641,17 @@ fun WorkspaceScreen(
                     // Right: Actions (Dark Mode Toggle & Overflow Menu)
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(2.dp)
+                        horizontalArrangement = Arrangement.spacedBy(0.dp)
                     ) {
                         IconButton(
                             onClick = { viewModel.toggleDarkMode() },
-                            modifier = Modifier.size(28.dp).testTag("dark_mode_toggle_button")
+                            modifier = Modifier.size(44.dp).testTag("dark_mode_toggle_button")
                         ) {
                             Icon(
                                 imageVector = if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
                                 contentDescription = if (isDarkTheme) "Beralih ke Mode Terang" else "Beralih ke Mode Gelap",
                                 tint = if (isDarkTheme) GoldLight else ScholarBlue,
-                                modifier = Modifier.size(16.dp)
+                                modifier = Modifier.size(18.dp)
                             )
                         }
 
@@ -639,26 +660,26 @@ fun WorkspaceScreen(
                                 triggerWorkspaceInteraction()
                                 isBarsPinned = !isBarsPinned
                             },
-                            modifier = Modifier.size(28.dp).testTag("workspace_pin_bars_button")
+                            modifier = Modifier.size(44.dp).testTag("workspace_pin_bars_button")
                         ) {
                             Icon(
                                 imageVector = if (isBarsPinned) Icons.Default.PushPin else Icons.Default.Fullscreen,
                                 contentDescription = if (isBarsPinned) "Sematkan Bilah" else "Layar Penuh Otomatis",
                                 tint = if (isBarsPinned) GoldPrimary else (if (isDarkTheme) DarkMuted else Color(0xFF64748B)),
-                                modifier = Modifier.size(16.dp)
+                                modifier = Modifier.size(18.dp)
                             )
                         }
 
                         Box {
                             IconButton(
                                 onClick = { showMenuDropdown = true },
-                                modifier = Modifier.size(28.dp).testTag("workspace_overflow_menu_button")
+                                modifier = Modifier.size(44.dp).testTag("workspace_overflow_menu_button")
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.MoreVert,
                                     contentDescription = "Menu Opsi Workspace",
                                     tint = if (isDarkTheme) DarkMuted else Color(0xFF64748B),
-                                    modifier = Modifier.size(16.dp)
+                                    modifier = Modifier.size(18.dp)
                                 )
                             }
 
@@ -667,12 +688,23 @@ fun WorkspaceScreen(
                                 onDismissRequest = { showMenuDropdown = false },
                                 modifier = Modifier.background(if (isDarkTheme) DarkSurface else Color.White)
                             ) {
+                                // Deteksi Baris and Editor Batas Baris are
+                                // intentionally NOT duplicated here -- they
+                                // already have dedicated, always-visible
+                                // buttons in the manuscript viewer's own
+                                // toolbar (see ViewerStudioView). Having the
+                                // same action reachable from two different
+                                // menus with no visual indication of which
+                                // is "the" way to do it was confusing users
+                                // trying to find the core OCR action; this
+                                // menu is now reserved for actions that
+                                // genuinely have no other entry point.
                                 DropdownMenuItem(
-                                    text = { Text("Pintasan Keyboard (Ctrl+/)", fontSize = 12.sp, color = if (isDarkTheme) DarkText else Color(0xFF0F172A)) },
-                                    leadingIcon = { Icon(Icons.Default.Keyboard, contentDescription = null, tint = if (isDarkTheme) DarkMuted else Color(0xFF64748B), modifier = Modifier.size(16.dp)) },
+                                    text = { Text("Urutkan Urutan Baca (Filologi)", fontSize = 12.sp, color = if (isDarkTheme) DarkText else Color(0xFF0F172A)) },
+                                    leadingIcon = { Icon(Icons.Default.AutoGraph, contentDescription = null, tint = GoldPrimary, modifier = Modifier.size(16.dp)) },
                                     onClick = {
                                         showMenuDropdown = false
-                                        showKeyboardShortcutsDialog = true
+                                        viewModel.reorderLinesScholarly()
                                     }
                                 )
                                 DropdownMenuItem(
@@ -683,28 +715,13 @@ fun WorkspaceScreen(
                                         viewModel.setShowLayerManagerDialog(true)
                                     }
                                 )
+                                HorizontalDivider(color = if (isDarkTheme) DarkBorder else Color(0xFFE2E8F0))
                                 DropdownMenuItem(
-                                    text = { Text("Deteksi Baris Manuskrip (PP-OCRv5)...", fontSize = 12.sp, color = if (isDarkTheme) DarkText else Color(0xFF0F172A)) },
-                                    leadingIcon = { Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = GoldPrimary, modifier = Modifier.size(16.dp)) },
+                                    text = { Text("Informasi Manuskrip", fontSize = 12.sp, color = if (isDarkTheme) DarkText else Color(0xFF0F172A)) },
+                                    leadingIcon = { Icon(Icons.Default.Info, contentDescription = null, tint = if (isDarkTheme) DarkMuted else Color(0xFF64748B), modifier = Modifier.size(16.dp)) },
                                     onClick = {
                                         showMenuDropdown = false
-                                        viewModel.setShowPpOcrConfigDialog(true)
-                                    }
-                                )
-                                DropdownMenuItem(
-                                    text = { Text("Editor Batas Baris (Line Editor)...", fontSize = 12.sp, color = if (isDarkTheme) DarkText else Color(0xFF0F172A)) },
-                                    leadingIcon = { Icon(Icons.Default.Crop, contentDescription = null, tint = GoldPrimary, modifier = Modifier.size(16.dp)) },
-                                    onClick = {
-                                        showMenuDropdown = false
-                                        viewModel.openLineEditModal()
-                                    }
-                                )
-                                DropdownMenuItem(
-                                    text = { Text("Urutkan Urutan Baca (Filologi)", fontSize = 12.sp, color = if (isDarkTheme) DarkText else Color(0xFF0F172A)) },
-                                    leadingIcon = { Icon(Icons.Default.AutoGraph, contentDescription = null, tint = GoldPrimary, modifier = Modifier.size(16.dp)) },
-                                    onClick = {
-                                        showMenuDropdown = false
-                                        viewModel.reorderLinesScholarly()
+                                        viewModel.setShowDocInfoDialog(true)
                                     }
                                 )
                                 DropdownMenuItem(
@@ -716,11 +733,11 @@ fun WorkspaceScreen(
                                     }
                                 )
                                 DropdownMenuItem(
-                                    text = { Text("Informasi Manuskrip", fontSize = 12.sp, color = if (isDarkTheme) DarkText else Color(0xFF0F172A)) },
-                                    leadingIcon = { Icon(Icons.Default.Info, contentDescription = null, tint = if (isDarkTheme) DarkMuted else Color(0xFF64748B), modifier = Modifier.size(16.dp)) },
+                                    text = { Text("Pintasan Keyboard (Ctrl+/)", fontSize = 12.sp, color = if (isDarkTheme) DarkText else Color(0xFF0F172A)) },
+                                    leadingIcon = { Icon(Icons.Default.Keyboard, contentDescription = null, tint = if (isDarkTheme) DarkMuted else Color(0xFF64748B), modifier = Modifier.size(16.dp)) },
                                     onClick = {
                                         showMenuDropdown = false
-                                        viewModel.setShowDocInfoDialog(true)
+                                        showKeyboardShortcutsDialog = true
                                     }
                                 )
                                 HorizontalDivider(color = if (isDarkTheme) DarkBorder else Color(0xFFE2E8F0))

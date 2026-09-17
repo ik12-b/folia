@@ -459,7 +459,13 @@ fun WriterView(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(36.dp)
+                    // Raised from 36dp to 48dp to accommodate properly
+                    // sized (44dp) touch targets for Undo/Redo/Save/Pin/
+                    // Hide on the right -- these are pressed constantly
+                    // while transcribing (Undo especially), so they need
+                    // real tap targets, not a cramped 26dp row that no
+                    // longer fits once increased.
+                    .height(48.dp)
                     .padding(horizontal = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
@@ -509,34 +515,34 @@ fun WriterView(
                     IconButton(
                         onClick = { handleWordUndo() },
                         enabled = undoStack.isNotEmpty(),
-                        modifier = Modifier.size(26.dp).testTag("writer_undo_button")
+                        modifier = Modifier.size(44.dp).testTag("writer_undo_button")
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.Undo,
                             contentDescription = "Undo",
                             tint = if (undoStack.isNotEmpty()) Color.White else Color.White.copy(alpha = 0.4f),
-                            modifier = Modifier.size(13.dp)
+                            modifier = Modifier.size(18.dp)
                         )
                     }
 
                     IconButton(
                         onClick = { handleWordRedo() },
                         enabled = redoStack.isNotEmpty(),
-                        modifier = Modifier.size(26.dp).testTag("writer_redo_button")
+                        modifier = Modifier.size(44.dp).testTag("writer_redo_button")
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.Redo,
                             contentDescription = "Redo",
                             tint = if (redoStack.isNotEmpty()) Color.White else Color.White.copy(alpha = 0.4f),
-                            modifier = Modifier.size(13.dp)
+                            modifier = Modifier.size(18.dp)
                         )
                     }
 
                     IconButton(
                         onClick = { onOpenExport() },
-                        modifier = Modifier.size(26.dp)
+                        modifier = Modifier.size(44.dp)
                     ) {
-                        Icon(Icons.Default.Save, contentDescription = "Simpan / Ekspor", tint = Color.White, modifier = Modifier.size(14.dp))
+                        Icon(Icons.Default.Save, contentDescription = "Simpan / Ekspor", tint = Color.White, modifier = Modifier.size(16.dp))
                     }
 
                     IconButton(
@@ -545,13 +551,13 @@ fun WriterView(
                             internalBarsPinned = !internalBarsPinned
                             onTogglePin()
                         },
-                        modifier = Modifier.size(26.dp).testTag("writer_pin_bars_button")
+                        modifier = Modifier.size(44.dp).testTag("writer_pin_bars_button")
                     ) {
                         Icon(
                             imageVector = if (effectiveBarsPinned) Icons.Default.PushPin else Icons.Default.Fullscreen,
                             contentDescription = if (effectiveBarsPinned) "Bilah Disematkan" else "Layar Penuh Otomatis",
                             tint = if (effectiveBarsPinned) GoldPrimary else Color.White,
-                            modifier = Modifier.size(14.dp)
+                            modifier = Modifier.size(18.dp)
                         )
                     }
 
@@ -559,13 +565,13 @@ fun WriterView(
                         onClick = {
                             internalBarsVisible = false
                         },
-                        modifier = Modifier.size(26.dp).testTag("writer_hide_bars_button")
+                        modifier = Modifier.size(44.dp).testTag("writer_hide_bars_button")
                     ) {
                         Icon(
                             imageVector = Icons.Default.FullscreenExit,
                             contentDescription = "Sembunyikan Bilah",
                             tint = Color.White,
-                            modifier = Modifier.size(14.dp)
+                            modifier = Modifier.size(18.dp)
                         )
                     }
                 }
@@ -580,7 +586,11 @@ fun WriterView(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(34.dp)
+                    // Raised from 34dp to 44dp so the "Add Page" button
+                    // (used whenever transcribing a new manuscript page)
+                    // gets a properly sized tap target instead of being
+                    // squeezed into a bar shorter than the button itself.
+                    .height(44.dp)
                     .padding(horizontal = 6.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
@@ -627,13 +637,13 @@ fun WriterView(
                     // Add Page Button
                     IconButton(
                         onClick = { onAddNewPage() },
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(40.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = "Tambah Halaman",
                             tint = GoldPrimary,
-                            modifier = Modifier.size(14.dp)
+                            modifier = Modifier.size(18.dp)
                         )
                     }
                 }
@@ -654,7 +664,7 @@ fun WriterView(
                             .clip(RoundedCornerShape(3.dp))
                             .background(if (wordDocMode == WordDocumentMode.PRINT_LAYOUT) wordBlue else Color.Transparent)
                             .clickable { wordDocMode = WordDocumentMode.PRINT_LAYOUT }
-                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                            .padding(horizontal = 10.dp, vertical = 12.dp)
                     ) {
                         Text(
                             text = "Lembaran",
@@ -670,7 +680,7 @@ fun WriterView(
                             .clip(RoundedCornerShape(3.dp))
                             .background(if (wordDocMode == WordDocumentMode.LINE_SYNCHRONIZED) wordBlue else Color.Transparent)
                             .clickable { wordDocMode = WordDocumentMode.LINE_SYNCHRONIZED }
-                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                            .padding(horizontal = 10.dp, vertical = 12.dp)
                     ) {
                         Text(
                             text = "Selaras Naskah",
@@ -686,7 +696,7 @@ fun WriterView(
                             .clip(RoundedCornerShape(3.dp))
                             .background(if (wordDocMode == WordDocumentMode.SPLIT_REFERENCE) wordBlue else Color.Transparent)
                             .clickable { wordDocMode = WordDocumentMode.SPLIT_REFERENCE }
-                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                            .padding(horizontal = 10.dp, vertical = 12.dp)
                     ) {
                         Text(
                             text = "Split Naskah",
@@ -737,7 +747,7 @@ fun WriterView(
                             .background(if (isDarkMode) DarkSurfaceVariant else ParchmentSurfaceVariant)
                             .border(0.5.dp, if (isDarkMode) DarkBorder else ParchmentBorder, RoundedCornerShape(3.dp))
                             .clickable { showTypefaceDropdown = true }
-                            .padding(horizontal = 6.dp, vertical = 3.dp),
+                            .padding(horizontal = 8.dp, vertical = 12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
@@ -787,7 +797,7 @@ fun WriterView(
                             .background(if (isDarkMode) DarkSurfaceVariant else ParchmentSurfaceVariant)
                             .border(0.5.dp, if (isDarkMode) DarkBorder else ParchmentBorder, RoundedCornerShape(3.dp))
                             .clickable { showFontSizeDropdown = true }
-                            .padding(horizontal = 5.dp, vertical = 3.dp),
+                            .padding(horizontal = 8.dp, vertical = 12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
@@ -863,7 +873,7 @@ fun WriterView(
                             .background(ScholarBlue.copy(alpha = 0.15f))
                             .border(0.5.dp, ScholarBlue.copy(alpha = 0.3f), RoundedCornerShape(3.dp))
                             .clickable { showLayerDropdown = true }
-                            .padding(horizontal = 6.dp, vertical = 3.dp),
+                            .padding(horizontal = 8.dp, vertical = 12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(Icons.Default.Layers, contentDescription = null, tint = ScholarBlue, modifier = Modifier.size(11.dp))
@@ -956,7 +966,7 @@ fun WriterView(
                                 documentText += char
                                 onContinuousTextChange(documentText, selectedLayerId)
                             }
-                            .padding(horizontal = 6.dp, vertical = 2.dp),
+                            .padding(horizontal = 8.dp, vertical = 10.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
@@ -977,7 +987,7 @@ fun WriterView(
                             .background(ScholarBlue.copy(alpha = 0.2f))
                             .border(0.5.dp, ScholarBlue.copy(alpha = 0.4f), RoundedCornerShape(3.dp))
                             .clickable { onFixArabicSpacing() }
-                            .padding(horizontal = 6.dp, vertical = 3.dp)
+                            .padding(horizontal = 8.dp, vertical = 12.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.AutoFixHigh, contentDescription = null, tint = ScholarBlue, modifier = Modifier.size(11.dp))
@@ -992,7 +1002,7 @@ fun WriterView(
                             .clip(RoundedCornerShape(3.dp))
                             .background(GoldPrimary.copy(alpha = 0.15f))
                             .clickable { onNormalize() }
-                            .padding(horizontal = 5.dp, vertical = 3.dp)
+                            .padding(horizontal = 8.dp, vertical = 12.dp)
                     ) {
                         Text("Auto-Normalisasi", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = GoldPrimary)
                     }
@@ -1002,7 +1012,7 @@ fun WriterView(
                             .clip(RoundedCornerShape(3.dp))
                             .background(if (isDarkMode) DarkSurface else ParchmentSurface)
                             .clickable { onStripTashkeel() }
-                            .padding(horizontal = 5.dp, vertical = 3.dp)
+                            .padding(horizontal = 8.dp, vertical = 12.dp)
                     ) {
                         Text("Hapus Harakat", fontSize = 9.sp, color = if (isDarkMode) DarkMuted else ParchmentMuted)
                     }
@@ -1454,7 +1464,11 @@ fun WriterView(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(24.dp)
+                        // Raised from 24dp to 36dp -- the zoom +/- buttons
+                        // in this bar were squeezed to 18dp (icon only
+                        //10dp), too small to hit reliably while actively
+                        // adjusting zoom during transcription work.
+                        .height(36.dp)
                         .padding(horizontal = 8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
@@ -1483,18 +1497,18 @@ fun WriterView(
                                 triggerInteraction()
                                 zoomPercent = (zoomPercent - 10f).coerceIn(50f, 200f)
                             },
-                            modifier = Modifier.size(18.dp)
+                            modifier = Modifier.size(32.dp)
                         ) {
-                            Icon(Icons.Default.Remove, contentDescription = "Perkecil", tint = Color.White, modifier = Modifier.size(10.dp))
+                            Icon(Icons.Default.Remove, contentDescription = "Perkecil", tint = Color.White, modifier = Modifier.size(14.dp))
                         }
                         IconButton(
                             onClick = {
                                 triggerInteraction()
                                 zoomPercent = (zoomPercent + 10f).coerceIn(50f, 200f)
                             },
-                            modifier = Modifier.size(18.dp)
+                            modifier = Modifier.size(32.dp)
                         ) {
-                            Icon(Icons.Default.Add, contentDescription = "Perbesar", tint = Color.White, modifier = Modifier.size(10.dp))
+                            Icon(Icons.Default.Add, contentDescription = "Perbesar", tint = Color.White, modifier = Modifier.size(14.dp))
                         }
                     }
                 }
@@ -1658,13 +1672,20 @@ private fun InterlinearLineCard(
 
                     IconButton(
                         onClick = onOpenLineEdit,
-                        modifier = Modifier.size(20.dp)
+                        // Modest increase (20dp -> 32dp): this button
+                        // repeats once per transcribed line in a
+                        // potentially long list, so it can't grow all the
+                        // way to 48dp without making every row noticeably
+                        // taller and the list heavier to scroll. 32dp is a
+                        // deliberate middle ground -- meaningfully easier
+                        // to hit than 20dp without that cost.
+                        modifier = Modifier.size(32.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Crop,
                             contentDescription = "Edit Batas Baris",
                             tint = ScholarBlue,
-                            modifier = Modifier.size(11.dp)
+                            modifier = Modifier.size(15.dp)
                         )
                     }
                 }
@@ -1794,9 +1815,12 @@ private fun WordMiniButton(
     isDarkMode: Boolean = false,
     onClick: () -> Unit
 ) {
+    // Raised from 24dp -- this is a shared component used 13 times across
+    // the writer toolbar (bold/italic/underline-style buttons), so fixing
+    // the touch target here fixes all of them at once.
     Box(
         modifier = Modifier
-            .size(24.dp)
+            .size(36.dp)
             .clip(RoundedCornerShape(3.dp))
             .background(if (isDarkMode) DarkSurfaceVariant else ParchmentSurfaceVariant)
             .border(0.5.dp, if (isDarkMode) DarkBorder else ParchmentBorder, RoundedCornerShape(3.dp))
@@ -1826,7 +1850,7 @@ private fun WordToggleButton(
 
     Box(
         modifier = Modifier
-            .size(24.dp)
+            .size(36.dp)
             .clip(RoundedCornerShape(3.dp))
             .background(if (isSelected) activeColor else unselectedBg)
             .border(0.5.dp, if (isSelected) GoldPrimary else unselectedBorder, RoundedCornerShape(3.dp))

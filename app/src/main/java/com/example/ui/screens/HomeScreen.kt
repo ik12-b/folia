@@ -303,7 +303,7 @@ fun HomeScreen(
                     // Toggle List vs Grid
                     IconButton(
                         onClick = { isGridView = !isGridView },
-                        modifier = Modifier.size(36.dp)
+                        modifier = Modifier.size(44.dp)
                     ) {
                         Icon(
                             imageVector = if (isGridView) Icons.Default.ViewList else Icons.Default.GridView,
@@ -590,13 +590,13 @@ private fun DocumentGridCard(
 
                 IconButton(
                     onClick = onDelete,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(36.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Delete,
                         contentDescription = "Hapus Dokumen",
                         tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(18.dp)
                     )
                 }
             }

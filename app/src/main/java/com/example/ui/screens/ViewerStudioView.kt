@@ -71,6 +71,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
@@ -91,6 +92,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
@@ -295,15 +297,84 @@ fun ViewerStudioView(
                     .border(width = 0.5.dp, color = toolbarBorder)
                     .testTag("viewer_top_header_bar")
             ) {
+            val toolbarScrollState = rememberScrollState()
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(44.dp)
-                    .horizontalScroll(rememberScrollState())
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    .height(44.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Pinned, always-visible pair: these are the two core
+                // actions of the entire app (detect lines, then transcribe
+                // them) and must never be scrollable out of view the way
+                // the other, lower-priority tools in the row below can be.
+                // Sized and colored a step more prominently than the
+                // scrolling chips (11sp vs 10sp, more padding) to reflect
+                // that these are the primary actions on this screen, not
+                // peers of "rotate" or "zoom".
+                Row(
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                        .clip(RoundedCornerShape(5.dp))
+                        .background(GoldPrimary.copy(alpha = 0.22f))
+                        .border(width = 0.75.dp, color = GoldPrimary.copy(alpha = 0.55f), shape = RoundedCornerShape(5.dp))
+                        .padding(horizontal = 4.dp, vertical = 2.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .clickable { onRunAutoSegmentation() }
+                            .padding(horizontal = 7.dp, vertical = 5.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(imageVector = Icons.Default.AutoAwesome, contentDescription = null, tint = GoldPrimary, modifier = Modifier.size(13.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Deteksi Baris", fontSize = 11.sp, color = GoldPrimary, fontWeight = FontWeight.Bold)
+                    }
+                    IconButton(
+                        onClick = onOpenPpOcrConfig,
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Tune,
+                            contentDescription = "Pengaturan Deteksi Baris PP-OCRv5",
+                            tint = GoldPrimary,
+                            modifier = Modifier.size(15.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(6.dp))
+
+                Row(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(5.dp))
+                        .background(Color(0xFF10B981).copy(alpha = 0.22f))
+                        .border(width = 0.75.dp, color = Color(0xFF10B981).copy(alpha = 0.55f), shape = RoundedCornerShape(5.dp))
+                        .clickable { onRunAutoTranscription() }
+                        .padding(horizontal = 9.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(imageVector = Icons.Default.Translate, contentDescription = null, tint = Color(0xFF10B981), modifier = Modifier.size(13.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Transkripsi", fontSize = 11.sp, color = Color(0xFF10B981), fontWeight = FontWeight.Bold)
+                }
+
+                VerticalDivider(
+                    modifier = Modifier.padding(horizontal = 6.dp).height(24.dp),
+                    color = toolbarBorder
+                )
+
+            Box(modifier = Modifier.weight(1f)) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(toolbarScrollState)
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                 // PDF Document Badge
                 Row(
                     modifier = Modifier
@@ -332,7 +403,7 @@ fun ViewerStudioView(
                 IconButton(
                     onClick = { showThumbnailsSidebar = !showThumbnailsSidebar },
                     modifier = Modifier
-                        .size(32.dp)
+                        .size(36.dp)
                         .clip(RoundedCornerShape(4.dp))
                         .background(if (showThumbnailsSidebar) ScholarBlue else pillBg)
                 ) {
@@ -340,7 +411,7 @@ fun ViewerStudioView(
                         imageVector = Icons.Default.ViewSidebar,
                         contentDescription = "Buka Panel Thumbnail",
                         tint = if (showThumbnailsSidebar) Color.White else pillIconTint,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(17.dp)
                     )
                 }
 
@@ -358,13 +429,13 @@ fun ViewerStudioView(
                             if (activePageIndex > 0) onSelectPage(activePageIndex - 1)
                         },
                         enabled = activePageIndex > 0,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(32.dp)
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Halaman Sebelumnya",
                             tint = if (activePageIndex > 0) pillIconTint else Color(0xFF94A3B8),
-                            modifier = Modifier.size(14.dp)
+                            modifier = Modifier.size(16.dp)
                         )
                     }
 
@@ -381,13 +452,13 @@ fun ViewerStudioView(
                             if (activePageIndex < pageCount - 1) onSelectPage(activePageIndex + 1)
                         },
                         enabled = activePageIndex < pageCount - 1,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(32.dp)
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                             contentDescription = "Halaman Berikutnya",
                             tint = if (activePageIndex < pageCount - 1) pillIconTint else Color(0xFF94A3B8),
-                            modifier = Modifier.size(14.dp)
+                            modifier = Modifier.size(16.dp)
                         )
                     }
                 }
@@ -403,9 +474,9 @@ fun ViewerStudioView(
                 ) {
                     IconButton(
                         onClick = { scale = (scale - 0.25f).coerceIn(0.5f, 4.0f) },
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(32.dp)
                     ) {
-                        Icon(Icons.Default.Remove, contentDescription = "Zoom Out", tint = pillIconTint, modifier = Modifier.size(14.dp))
+                        Icon(Icons.Default.Remove, contentDescription = "Zoom Out", tint = pillIconTint, modifier = Modifier.size(16.dp))
                     }
 
                     Box {
@@ -414,7 +485,7 @@ fun ViewerStudioView(
                                 .clip(RoundedCornerShape(3.dp))
                                 .background(if (isDarkMode) Color(0xFF334155) else Color(0xFFE2E8F0))
                                 .clickable { showZoomDropdown = true }
-                                .padding(horizontal = 6.dp, vertical = 3.dp),
+                                .padding(horizontal = 8.dp, vertical = 8.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
@@ -458,9 +529,9 @@ fun ViewerStudioView(
 
                     IconButton(
                         onClick = { scale = (scale + 0.25f).coerceIn(0.5f, 4.0f) },
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(32.dp)
                     ) {
-                        Icon(Icons.Default.Add, contentDescription = "Zoom In", tint = pillIconTint, modifier = Modifier.size(14.dp))
+                        Icon(Icons.Default.Add, contentDescription = "Zoom In", tint = pillIconTint, modifier = Modifier.size(16.dp))
                     }
                 }
 
@@ -468,7 +539,7 @@ fun ViewerStudioView(
                 IconButton(
                     onClick = { rotationAngle = (rotationAngle + 90f) % 360f },
                     modifier = Modifier
-                        .size(30.dp)
+                        .size(36.dp)
                         .clip(RoundedCornerShape(4.dp))
                         .background(pillBg)
                         .border(width = 0.5.dp, color = pillBorder, shape = RoundedCornerShape(4.dp))
@@ -477,7 +548,7 @@ fun ViewerStudioView(
                         imageVector = Icons.Default.RotateRight,
                         contentDescription = "Putar 90°",
                         tint = pillIconTint,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(18.dp)
                     )
                 }
 
@@ -506,52 +577,11 @@ fun ViewerStudioView(
                     )
                 }
 
-                // AI Segment & HTR triggers
-                Row(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(GoldPrimary.copy(alpha = 0.2f))
-                        .border(width = 0.5.dp, color = GoldPrimary.copy(alpha = 0.4f), shape = RoundedCornerShape(4.dp))
-                        .padding(horizontal = 4.dp, vertical = 2.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(3.dp))
-                            .clickable { onRunAutoSegmentation() }
-                            .padding(horizontal = 6.dp, vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(imageVector = Icons.Default.AutoAwesome, contentDescription = null, tint = GoldPrimary, modifier = Modifier.size(12.dp))
-                        Spacer(modifier = Modifier.width(3.dp))
-                        Text("Deteksi Baris (Det)", fontSize = 10.sp, color = GoldPrimary, fontWeight = FontWeight.Bold)
-                    }
-                    IconButton(
-                        onClick = onOpenPpOcrConfig,
-                        modifier = Modifier.size(20.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Tune,
-                            contentDescription = "Pengaturan Deteksi Baris PP-OCRv5",
-                            tint = GoldPrimary,
-                            modifier = Modifier.size(12.dp)
-                        )
-                    }
-                }
-
-                Row(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(Color(0xFF10B981).copy(alpha = 0.2f))
-                        .border(width = 0.5.dp, color = Color(0xFF10B981).copy(alpha = 0.4f), shape = RoundedCornerShape(4.dp))
-                        .clickable { onRunAutoTranscription() }
-                        .padding(horizontal = 8.dp, vertical = 5.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(imageVector = Icons.Default.Translate, contentDescription = null, tint = Color(0xFF10B981), modifier = Modifier.size(12.dp))
-                    Spacer(modifier = Modifier.width(3.dp))
-                    Text("Transkripsi (HTR)", fontSize = 10.sp, color = Color(0xFF10B981), fontWeight = FontWeight.Bold)
-                }
+                // AI Segment & HTR triggers were moved out of this scrolling
+                // row -- see the fixed pinned pair placed before the Box
+                // below. They're the single most important actions in this
+                // screen (this IS the OCR app), so they can't be allowed to
+                // scroll off-screen along with the less critical tools.
 
                 // Tool mode chips
                 PdfToolChip(
@@ -670,6 +700,45 @@ fun ViewerStudioView(
                         modifier = Modifier.size(16.dp)
                     )
                 }
+                }
+
+                // Right-edge fade + chevron hint: the scrolling section of
+                // the toolbar (everything except the pinned Deteksi/
+                // Transkripsi pair) still has more controls than fit most
+                // phone widths, but a plain horizontalScroll has no visual
+                // affordance -- users had no way to know there were more
+                // tools (including "+Baseline" and "Edit Batas") sitting
+                // off-screen to the right. Only shown when there's actually
+                // more content to scroll to, so it disappears once the user
+                // has scrolled to the end.
+                val canScrollRight = toolbarScrollState.maxValue > 0 &&
+                    toolbarScrollState.value < toolbarScrollState.maxValue
+                androidx.compose.animation.AnimatedVisibility(
+                    visible = canScrollRight,
+                    enter = fadeIn(),
+                    exit = fadeOut(),
+                    modifier = Modifier.align(Alignment.CenterEnd)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .width(28.dp)
+                            .background(
+                                Brush.horizontalGradient(
+                                    colors = listOf(toolbarBg.copy(alpha = 0f), toolbarBg)
+                                )
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                            contentDescription = "Lebih banyak alat di sebelah kanan",
+                            tint = pillIconTint,
+                            modifier = Modifier.size(14.dp)
+                        )
+                    }
+                }
+            }
             }
         }
     }
@@ -978,9 +1047,9 @@ fun ViewerStudioView(
                                 triggerInteraction()
                                 scale = (scale - 0.25f).coerceIn(0.5f, 4.0f)
                             },
-                            modifier = Modifier.size(26.dp)
+                            modifier = Modifier.size(32.dp)
                         ) {
-                            Icon(imageVector = Icons.Default.Remove, contentDescription = "Perkecil", tint = pillIconTint, modifier = Modifier.size(13.dp))
+                            Icon(imageVector = Icons.Default.Remove, contentDescription = "Perkecil", tint = pillIconTint, modifier = Modifier.size(16.dp))
                         }
                         Text(
                             text = "${(scale * 100).toInt()}%",
@@ -993,18 +1062,18 @@ fun ViewerStudioView(
                                 triggerInteraction()
                                 scale = (scale + 0.25f).coerceIn(0.5f, 4.0f)
                             },
-                            modifier = Modifier.size(26.dp)
+                            modifier = Modifier.size(32.dp)
                         ) {
-                            Icon(imageVector = Icons.Default.Add, contentDescription = "Perbesar", tint = pillIconTint, modifier = Modifier.size(13.dp))
+                            Icon(imageVector = Icons.Default.Add, contentDescription = "Perbesar", tint = pillIconTint, modifier = Modifier.size(16.dp))
                         }
                         IconButton(
                             onClick = {
                                 triggerInteraction()
                                 scale = 1.0f; rotationAngle = 0f
                             },
-                            modifier = Modifier.size(26.dp)
+                            modifier = Modifier.size(32.dp)
                         ) {
-                            Icon(imageVector = Icons.Default.RestartAlt, contentDescription = "Reset Zoom", tint = pillIconTint, modifier = Modifier.size(13.dp))
+                            Icon(imageVector = Icons.Default.RestartAlt, contentDescription = "Reset Zoom", tint = pillIconTint, modifier = Modifier.size(16.dp))
                         }
                     }
                 }
