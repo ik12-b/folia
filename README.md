@@ -75,10 +75,10 @@ Untuk build **release**, siapkan keystore upload Anda sendiri dan set environmen
 Repo ini belum menyertakan `gradlew`/`gradlew.bat` (Gradle Wrapper). Untuk membuatnya sekali (disarankan, agar versi Gradle konsisten untuk semua kontributor):
 
 ```bash
-gradle wrapper --gradle-version 9.2.1
+gradle wrapper --gradle-version 9.7.1
 ```
 
-perintah ini akan menghasilkan `gradlew`, `gradlew.bat`, dan `gradle/wrapper/gradle-wrapper.jar` — commit ketiganya. Setelah itu, gunakan `./gradlew <task>` seperti proyek Android pada umumnya (mis. `./gradlew assembleDebug`). Sebelum wrapper dibuat, Anda perlu Gradle 9.2.1 terinstal secara lokal untuk menjalankan perintah di atas (lihat [gradle.org/install](https://gradle.org/install/)).
+perintah ini akan menghasilkan `gradlew`, `gradlew.bat`, dan `gradle/wrapper/gradle-wrapper.jar` — commit ketiganya. Setelah itu, gunakan `./gradlew <task>` seperti proyek Android pada umumnya (mis. `./gradlew assembleDebug`). Sebelum wrapper dibuat, Anda perlu Gradle 9.7.1 terinstal secara lokal untuk menjalankan perintah di atas (lihat [gradle.org/install](https://gradle.org/install/)).
 
 ---
 

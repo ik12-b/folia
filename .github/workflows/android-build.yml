@@ -44,17 +44,23 @@ jobs:
         uses: actions/checkout@v6
 
       # AGP 9.1.x requires JDK 17 (see app/build.gradle.kts / AGP compatibility docs).
-      - name: Set up JDK 21
+      - name: Set up JDK 17
         uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
-          java-version: '21'
+          java-version: '17'
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
         with:
           # Matches gradle/wrapper/gradle-wrapper.properties. Update both
           # together if the project's Gradle version changes.
+          #
+          # NOTE: AGP 9.1.1 (this project's Android Gradle Plugin version)
+          # requires Gradle >= 9.3.1 -- an earlier attempt at 9.2.1 failed
+          # CI with "Minimum supported Gradle version is 9.3.1". 9.7.1 is
+          # used here (rather than pinning exactly to the 9.3.1 floor) to
+          # leave headroom above that minimum.
           gradle-version: '9.7.1'
 
       # app/build.gradle.kts' "debugConfig" signing config expects a

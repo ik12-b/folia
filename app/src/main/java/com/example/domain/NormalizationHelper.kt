@@ -171,18 +171,70 @@ object NormalizationHelper {
     fun healClassicalArabicPhrases(text: String): String {
         if (text.isBlank()) return text
         val norm = normalizeArabic(text).replace(" ", "")
+
+        // Pick the BEST-matching canonical phrase across the whole list,
+        // not the first one that clears the threshold. The previous
+        // version returned as soon as any candidate passed, in array
+        // order -- for a short input like "لا إله إلا الله" (the shahada),
+        // the FIRST candidate in the list ("بسم الله الرحمن الرحيم", the
+        // basmalah -- an entirely different phrase) happened to score
+        // above threshold under the old metric before the genuinely
+        // related "شهادة أن لا إله إلا الله..." entry further down the
+        // list was ever checked, silently corrupting a correct
+        // transcription into the wrong phrase.
+        var bestMatch: String? = null
+        var bestSim = 0.0
+
         for (canonical in CANONICAL_MANUSCRIPT_PHRASES) {
             val normCanonical = normalizeArabic(canonical).replace(" ", "")
             if (norm.length >= 8 && normCanonical.length >= 8) {
-                // Calculate simple similarity
-                val commonChars = norm.filter { normCanonical.contains(it) }.length
-                val sim = (commonChars.toDouble() * 2) / (norm.length + normCanonical.length)
-                if (sim >= 0.72) {
-                    return canonical
+                val sim = levenshteinSimilarity(norm, normCanonical)
+                if (sim > bestSim) {
+                    bestSim = sim
+                    bestMatch = canonical
                 }
             }
         }
-        return text
+
+        return if (bestMatch != null && bestSim >= 0.72) bestMatch else text
+    }
+
+    /**
+     * Levenshtein-distance-based similarity (1.0 = identical, 0.0 =
+     * completely different), normalized by the longer string's length.
+     *
+     * Replaces a prior "shared character set" metric (fraction of
+     * characters in `a` that also appear anywhere in `b`, with no regard
+     * for order, position, or repetition) that was verified to be far too
+     * permissive for Arabic text: with only ~28 base letters, most short
+     * classical Arabic phrases share the bulk of their character set with
+     * each other regardless of actual similarity. On the shahada test case
+     * above, that metric scored the (unrelated) basmalah at 0.774 --
+     * higher than the actually-related shahada phrase further down the
+     * canonical list (0.511) -- because both phrases happen to draw from
+     * the same small pool of common Arabic letters. Levenshtein distance,
+     * which accounts for character order and position, does not have
+     * this failure mode.
+     */
+    private fun levenshteinSimilarity(a: String, b: String): Double {
+        if (a.isEmpty() && b.isEmpty()) return 1.0
+        val m = a.length
+        val n = b.length
+        val dp = Array(m + 1) { IntArray(n + 1) }
+        for (i in 0..m) dp[i][0] = i
+        for (j in 0..n) dp[0][j] = j
+        for (i in 1..m) {
+            for (j in 1..n) {
+                val cost = if (a[i - 1] == b[j - 1]) 0 else 1
+                dp[i][j] = minOf(
+                    dp[i - 1][j] + 1,
+                    dp[i][j - 1] + 1,
+                    dp[i - 1][j - 1] + cost
+                )
+            }
+        }
+        val maxLen = maxOf(m, n)
+        return if (maxLen == 0) 1.0 else 1.0 - (dp[m][n].toDouble() / maxLen)
     }
 
     fun normalizeArabic(text: String): String {
