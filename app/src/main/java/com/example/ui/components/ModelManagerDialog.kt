@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -159,6 +160,19 @@ fun ModelManagerDialog(
                 Spacer(modifier = Modifier.height(10.dp))
 
                 LazyColumn(
+                    // A LazyColumn inside a Dialog's wrap-content Column
+                    // has no height constraint to measure against by
+                    // default, which is a well-known Compose pitfall --
+                    // depending on how the surrounding constraints
+                    // resolve, it can end up rendering only its first
+                    // item (or none) instead of becoming scrollable, which
+                    // is exactly what the "only one model card visible"
+                    // bug report showed (3 models are seeded in the
+                    // database -- see FoliaDatabase.populateInitialKitabs
+                    // -- but only "KitabHTR-Tiny" was rendering). Giving
+                    // it an explicit bounded height makes it scroll
+                    // properly within the dialog instead.
+                    modifier = Modifier.heightIn(max = 420.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     items(models, key = { it.id }) { model ->
@@ -263,6 +277,29 @@ private fun ModelCard(
                             modifier = Modifier.padding(end = 4.dp).size(16.dp)
                         )
                         Text(text = "Sedang Digunakan", fontSize = 12.sp, color = ConfHigh, fontWeight = FontWeight.Medium)
+                    }
+                } else if (!model.isInstalled) {
+                    // Listed as a known model but its file isn't bundled/
+                    // imported on this device -- showing an enabled
+                    // "Jadikan Aktif" button here previously let the user
+                    // tap it with no real effect (see
+                    // FoliaDatabase.populateInitialKitabs for the KitabHTR-
+                    // Tiny case this was written for): the button appeared
+                    // to succeed but silently activated a different,
+                    // already-installed model instead of this one.
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.FileUpload,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.outline,
+                            modifier = Modifier.padding(end = 4.dp).size(16.dp)
+                        )
+                        Text(
+                            text = "Belum Diunduh — impor berkas .onnx untuk memakai model ini",
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.outline,
+                            fontWeight = FontWeight.Medium
+                        )
                     }
                 } else {
                     Button(

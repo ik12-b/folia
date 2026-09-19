@@ -49,6 +49,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -95,6 +96,8 @@ fun HomeScreen(
     val showNewDocDialog by viewModel.showNewDocDialog.collectAsStateWithLifecycle()
     val showModelManagerDialog by viewModel.showModelManagerDialog.collectAsStateWithLifecycle()
     val allModels by viewModel.allModels.collectAsStateWithLifecycle()
+    val statusMessage by viewModel.statusMessage.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { androidx.compose.material3.SnackbarHostState() }
 
     var searchQuery by remember { mutableStateOf("") }
     var selectedScriptFilter by remember { mutableStateOf("Semua") }
@@ -108,7 +111,19 @@ fun HomeScreen(
         }
     }
 
+    // See SettingsScreen for why this is needed: without it, importing or
+    // activating a model from the Model Manager opened here (via the
+    // "KitabHTR" shortcut on this screen) gave no visible feedback either
+    // way.
+    LaunchedEffect(statusMessage) {
+        statusMessage?.let { msg ->
+            snackbarHostState.showSnackbar(msg)
+            viewModel.clearStatusMessage()
+        }
+    }
+
     Scaffold(
+        snackbarHost = { androidx.compose.material3.SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { viewModel.setShowNewDocDialog(true) },

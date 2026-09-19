@@ -110,7 +110,22 @@ abstract class FoliaDatabase : RoomDatabase() {
                     architecture = "CRNN-CTC (ResNet8 + BiLSTM + CTC)",
                     version = "v1.4-tiny",
                     fileSizeMb = 18.4f,
-                    isInstalled = true,
+                    // Listed as a known alternative model, but its .onnx
+                    // file is NOT bundled in app/src/main/assets/models/
+                    // (only muharaf_rec_best_int8.onnx and
+                    // ppocrv5_det_int8.onnx are). isInstalled=true here
+                    // previously let the user tap "Jadikan Aktif" on this
+                    // row; since its filePath is also blank,
+                    // FoliaRepository.setActiveModel() interpreted that as
+                    // "activate the bundled default" (Muharaf) instead --
+                    // so the button appeared to work but silently
+                    // activated a different model than the one shown,
+                    // which is what the "switching models doesn't work"
+                    // report was seeing. isInstalled=false now, and
+                    // ModelManagerDialog's ModelCard shows a disabled
+                    // "Belum Diunduh" state instead of an activate button
+                    // for any model in this state.
+                    isInstalled = false,
                     huggingFaceRepo = "Ik45/KitabHTR-Tiny",
                     isDefault = false,
                     isActive = false

@@ -44,6 +44,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -92,6 +93,8 @@ fun SettingsScreen(
 
     val showModelManagerDialog by viewModel.showModelManagerDialog.collectAsStateWithLifecycle()
     val allModels by viewModel.allModels.collectAsStateWithLifecycle()
+    val statusMessage by viewModel.statusMessage.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { androidx.compose.material3.SnackbarHostState() }
 
     var autoNormalizeHamzah by remember { mutableStateOf(true) }
     var autoStripTashkeelInSearch by remember { mutableStateOf(true) }
@@ -99,10 +102,27 @@ fun SettingsScreen(
     var defaultReadingDirection by remember { mutableStateOf("RTL") }
     var showBaselineHandles by remember { mutableStateOf(true) }
 
+    // Surfaces the result of model import/activation (and any other
+    // repository action that sets statusMessage) as a Snackbar. Without
+    // this, importing or activating a model from the Model Manager opened
+    // from Settings gave the user no feedback at all -- success and
+    // failure looked identical (nothing visibly happened either way),
+    // which is what made "import/switch model doesn't work" hard to tell
+    // apart from "it worked silently". WorkspaceScreen already had this;
+    // it just wasn't wired up here or in HomeScreen, the two other places
+    // ModelManagerDialog can be opened from.
+    LaunchedEffect(statusMessage) {
+        statusMessage?.let { msg ->
+            snackbarHostState.showSnackbar(msg)
+            viewModel.clearStatusMessage()
+        }
+    }
+
     Scaffold(
         modifier = modifier
             .fillMaxSize()
-            .testTag("settings_screen")
+            .testTag("settings_screen"),
+        snackbarHost = { androidx.compose.material3.SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
