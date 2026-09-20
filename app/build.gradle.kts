@@ -17,6 +17,24 @@ android {
     versionName = "1.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+    // Without this, the debug/release APK bundles onnxruntime-android's
+    // native libonnxruntime.so for ALL FOUR Android ABIs (arm64-v8a,
+    // armeabi-v7a, x86, x86_64) in a single APK -- verified this is the
+    // dominant contributor to APK size ballooning to ~87MB despite the
+    // app only shipping ~6MB of actual .onnx model assets: a single
+    // architecture's libonnxruntime.so alone is commonly 10-15MB, so four
+    // of them (most of which are never used on any one real device) adds
+    // 40-60MB of pure waste. arm64-v8a alone covers effectively all
+    // Android phones sold since ~2017 (including 32-bit-only armeabi-v7a
+    // devices being vanishingly rare at this point), so restricting to it
+    // is the right default for a single-APK distribution like this
+    // project's (a CI artifact/manual install, not a Play Store app
+    // bundle that could instead use per-ABI splits to serve each device
+    // its own smaller APK automatically).
+    ndk {
+      abiFilters += listOf("arm64-v8a")
+    }
   }
 
   signingConfigs {
@@ -38,7 +56,14 @@ android {
   buildTypes {
     release {
       isCrunchPngs = false
-      isMinifyEnabled = false
+      // Enabled (was false) as part of investigating an APK bloated to
+      // ~87MB -- material-icons-extended alone ships ~8MB of icon
+      // resources/classes for the full Material icon set, of which this
+      // app uses a small fraction; R8 shrinking removes the rest.
+      // Requires the -keep rules added to proguard-rules.pro for
+      // ONNX Runtime/Room/Moshi to avoid breaking their
+      // reflection/JNI-based code paths -- see the comments there.
+      isMinifyEnabled = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
       signingConfig = signingConfigs.getByName("release")
     }

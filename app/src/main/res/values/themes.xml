@@ -8,7 +8,7 @@
         (see MainActivity.onCreate, which calls installSplashScreen()
         before setContent and then switches the activity back to
         Theme.MyApplication). Kept as a single solid brand color plus the
-        centered icon mark no text, no gradient per the platform
+        centered icon mark  no text, no gradient -- per the platform
         SplashScreen API's own constraints (it only supports a solid
         background color and a single centered icon/animated-icon
         drawable; anything more elaborate has to be its own in-app
