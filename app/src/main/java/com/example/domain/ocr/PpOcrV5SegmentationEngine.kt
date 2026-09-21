@@ -83,6 +83,18 @@ object PpOcrV5SegmentationEngine {
                 } else null
             }
         } catch (e: Exception) {
+            // Previously swallowed silently -- a user-imported page whose
+            // content:// URI permission had expired (a common Android
+            // scenario: SAF grants can lapse after the app process
+            // restarts, or if the source app/picker revokes them) would
+            // fail here with no trace anywhere, surfacing to the user only
+            // as a mysterious "0 baris terdeteksi" after running detection
+            // with nothing further to go on.
+            android.util.Log.e(
+                "PpOcrV5SegmentationEngine",
+                "loadManuscriptBitmap failed for imageResName=$imageResName imageUri=$imageUri: ${e.message}",
+                e
+            )
             null
         }
     }

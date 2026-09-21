@@ -551,19 +551,37 @@ class FoliaViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun runAutoSegmentation(config: com.example.domain.ocr.PpOcrV5SegmentationEngine.DetConfig? = null) {
-        val activePart = _parts.value.getOrNull(_activePageIndex.value) ?: return
+        val activePart = _parts.value.getOrNull(_activePageIndex.value) ?: run {
+            _statusMessage.value = "Gagal: tidak ada halaman aktif untuk dideteksi."
+            return
+        }
         val detConfig = config ?: _ppOcrConfig.value
         if (config != null) {
             _ppOcrConfig.value = config
         }
         viewModelScope.launch(Dispatchers.IO) {
             _statusMessage.value = "Menjalankan Pipeline ONNX (PP-OCRv5 Det + Muharaf HTR)..."
+            var lastStage = ""
             val count = repository.runAutoSegmentation(activePart.id, detConfig) { stage, _ ->
+                lastStage = stage
                 _statusMessage.value = stage
             }
             _selectedLineId.value = null
             loadPartContent(activePart.id)
-            _statusMessage.value = "Selesai: $count baris berhasil disegmentasi & ditranskripsi via ONNX."
+            // Only overwrite with a success message when something was
+            // actually produced. Previously this line unconditionally
+            // replaced whatever status was showing -- including a
+            // specific failure reason just reported via onProgress (e.g.
+            // "citra halaman tidak dapat dimuat...") -- with "Selesai: 0
+            // baris berhasil...", which reads as a completed, successful
+            // run rather than the failure it actually was.
+            _statusMessage.value = if (count > 0) {
+                "Selesai: $count baris berhasil disegmentasi & ditranskripsi via ONNX."
+            } else if (lastStage.startsWith("Gagal")) {
+                lastStage
+            } else {
+                "Deteksi selesai, namun tidak ada baris teks yang terdeteksi pada halaman ini."
+            }
         }
     }
 

@@ -295,8 +295,25 @@ class FoliaRepository(
         config: com.example.domain.ocr.PpOcrV5SegmentationEngine.DetConfig = com.example.domain.ocr.PpOcrV5SegmentationEngine.DetConfig(),
         onProgress: (stage: String, progress: Float) -> Unit = { _, _ -> }
     ): Int {
-        val part = dao.getPartById(partId) ?: return 0
-        val bitmap = com.example.domain.ocr.PpOcrV5SegmentationEngine.loadManuscriptBitmap(context, part.imageResName, part.imageUri) ?: return 0
+        val part = dao.getPartById(partId) ?: run {
+            // Previously returned 0 with no explanation, which
+            // FoliaViewModel.runAutoSegmentation then reported as
+            // "Selesai: 0 baris berhasil disegmentasi" -- identical
+            // wording to a real page that genuinely has no detectable
+            // text, giving the user no way to tell "detection ran and
+            // found nothing" apart from "detection couldn't even start".
+            onProgress("Gagal: halaman manuskrip tidak ditemukan di basis data.", 0f)
+            return 0
+        }
+        val bitmap = com.example.domain.ocr.PpOcrV5SegmentationEngine.loadManuscriptBitmap(context, part.imageResName, part.imageUri) ?: run {
+            // Most common real cause: a user-imported page's content://
+            // URI permission has lapsed (e.g. after the app process was
+            // killed and restarted) -- see the logging added in
+            // PpOcrV5SegmentationEngine.loadManuscriptBitmap for the
+            // underlying exception when this happens.
+            onProgress("Gagal: citra halaman tidak dapat dimuat (berkas mungkin dipindahkan/izin akses kedaluwarsa). Coba impor ulang halaman ini.", 0f)
+            return 0
+        }
 
         val pipelineConfig = com.example.domain.ocr.pipeline.OcrPipeline.PipelineConfig(
             thresh = config.thresh,
