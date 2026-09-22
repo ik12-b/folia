@@ -257,7 +257,6 @@ fun SettingsScreen(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(6.dp))
                                 .background(ConfHigh.copy(alpha = 0.15f))
-                                .padding(horizontal = 8.dp, vertical = 3.dp)
                         ) {
                             Text(
                                 text = "Aktif • Offline",

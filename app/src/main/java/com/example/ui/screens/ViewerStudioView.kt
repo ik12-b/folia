@@ -858,13 +858,13 @@ fun ViewerStudioView(
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(horizontal = 12.dp, vertical = 10.dp),
+           
                         contentAlignment = Alignment.Center
                     ) {
                         // PDF Page Container Sheet (Pure White Paper in Light Mode with crisp border & shadow)
                         Surface(
                             color = if (isDarkMode) DarkSurface else Color.White,
-                            shape = RoundedCornerShape(2.dp),
+                            shape = RoundedCornerShape(0.dp),
                             shadowElevation = 10.dp,
                             modifier = Modifier
                                 .fillMaxSize()

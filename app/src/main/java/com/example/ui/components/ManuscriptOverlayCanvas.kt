@@ -248,27 +248,10 @@ fun ManuscriptOverlayCanvas(
         val containerWidth = maxWidth
         val containerHeight = maxHeight
 
-        // Maintain the exact aspect ratio of the manuscript bitmap to prevent coordinate misalignment
-        val imageAspect = if (bitmap != null && bitmap.height > 0) {
-            bitmap.width.toFloat() / bitmap.height.toFloat()
-        } else {
-            1200f / 1600f // Default 3:4 manuscript aspect ratio
-        }
+        
+        val finalWidth = (containerWidth * animatedScale).coerceAtLeast(80.dp)
+        val finalHeight = (containerHeight * animatedScale).coerceAtLeast(80.dp)
 
-        val containerAspect = if (containerHeight.value > 0) containerWidth.value / containerHeight.value else 0.75f
-
-        val (fittedWidth, fittedHeight) = if (containerAspect > imageAspect) {
-            val h = containerHeight * 0.96f
-            val w = h * imageAspect
-            Pair(w, h)
-        } else {
-            val w = containerWidth * 0.96f
-            val h = w / imageAspect
-            Pair(w, h)
-        }
-
-        val finalWidth = (fittedWidth * animatedScale).coerceAtLeast(80.dp)
-        val finalHeight = (fittedHeight * animatedScale).coerceAtLeast(80.dp)
 
         Box(
             modifier = Modifier

@@ -382,7 +382,7 @@ fun LineEditorModal(
                             )
                         }
 
-                        Column {
+                        Column(modifier = Modifier.weight(1f, fill = false)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
                                     text = "Editor Batas Baris Manuskrip",
@@ -409,8 +409,10 @@ fun LineEditorModal(
                             }
                             Text(
                                 text = "Geser titik sudut, tepi garis, atau gunakan tombol D-Pad untuk menyetel batas teks secara presisi",
-                                fontSize = 11.sp,
+                                fontSize = 10.sp,
                                 color = Color(0xFF94A3B8)
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
                         }
                     }
@@ -473,7 +475,7 @@ fun LineEditorModal(
                                 onDismissRequest = { showLineDropdown = false },
                                 modifier = Modifier
                                     .background(Color(0xFF1E293B))
-                                    .height(260.dp)
+                                    .height(26.dp)
                             ) {
                                 allLines.forEachIndexed { idx, l ->
                                     val isCurrent = l.id == line.id
@@ -754,7 +756,7 @@ fun LineEditorModal(
                                 modifier = Modifier
                                     .weight(1.1f)
                                     .fillMaxWidth()
-                                    .clip(RoundedCornerShape(10.dp))
+                                    .clip(RoundedCornerShape(.dp))
                                     .background(Color(0xFF020617))
                                     .border(1.dp, Color(0xFF1E293B), RoundedCornerShape(10.dp))
                             ) {
@@ -835,10 +837,13 @@ fun LineEditorModal(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    val compactPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
+
                     // Reset to original boundaries
                     OutlinedButton(
                         onClick = { resetToOriginal() },
                         enabled = hasChanges,
+                        contentPadding = compactPadding,
                         colors = ButtonDefaults.outlinedButtonColors(
                             contentColor = Color(0xFFCBD5E1),
                             disabledContentColor = Color(0xFF475569)
@@ -871,15 +876,16 @@ fun LineEditorModal(
                                     saveCurrent()
                                     onSelectLine(allLines[currentLineIndex + 1].id)
                                 },
+                                contentPadding = compactPadding,
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(0xFF1E293B),
                                     contentColor = ScholarBlueLight
                                 ),
                                 modifier = Modifier.testTag("line_editor_save_and_next_button")
                             ) {
-                                Text("Simpan & Lanjut", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(14.dp))
+                                Text("Simpan & Lanjut", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Spacer(modifier = Modifier.width(3.dp))
+                                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(12.dp))
                             }
                         }
 
@@ -893,7 +899,7 @@ fun LineEditorModal(
                             modifier = Modifier.testTag("line_editor_save_button")
                         ) {
                             Icon(imageVector = Icons.Default.Check, contentDescription = null, tint = Color.Black, modifier = Modifier.size(15.dp))
-                            Spacer(modifier = Modifier.width(5.dp))
+                            Spacer(modifier = Modifier.width(3.dp))
                             Text("Simpan Batas", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                         }
                     }
