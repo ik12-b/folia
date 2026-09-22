@@ -256,9 +256,13 @@ fun ViewerStudioView(
 
     val zoomLevels = listOf(0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 2.0f, 3.0f)
 
-    // Responsive padding that smoothly animates when bars appear or hide
+    // Responsive padding that smoothly animates when bars appear or hide.
+    // Matched exactly to the toolbar Row's own .height(44.dp) below --
+    // it was previously 48dp, a leftover 4dp buffer that had no visual
+    // purpose and just pushed the manuscript page down further than the
+    // toolbar itself required.
     val topBarPadding by animateDpAsState(
-        targetValue = if (effectiveBarsVisible) 48.dp else 4.dp,
+        targetValue = if (effectiveBarsVisible) 44.dp else 4.dp,
         animationSpec = tween(durationMillis = 280),
         label = "viewer_top_padding"
     )
@@ -856,13 +860,15 @@ fun ViewerStudioView(
                     val isCurrentPage = pageIdx == activePageIndex
 
                     Box(
-                        modifier = Modifier .fillMaxSize(),   
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 12.dp, vertical = 10.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         // PDF Page Container Sheet (Pure White Paper in Light Mode with crisp border & shadow)
                         Surface(
                             color = if (isDarkMode) DarkSurface else Color.White,
-                            shape = RoundedCornerShape(0.dp),
+                            shape = RoundedCornerShape(2.dp),
                             shadowElevation = 10.dp,
                             modifier = Modifier
                                 .fillMaxSize()

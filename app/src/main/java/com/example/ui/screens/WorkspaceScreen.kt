@@ -12,6 +12,7 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.drawBehind
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -882,21 +883,31 @@ fun ManuscriptProgressBar(
     val progressPercentInt = (progress.overallPercentage * 100f).toInt()
     val isComplete = progress.totalLines > 0 && progress.completedLines == progress.totalLines
 
+    // No own Surface elevation/border here on purpose: this bar sits
+    // directly beneath the nav Row's Surface above it, and the two used
+    // to each draw their own border + shadow, reading as two stacked
+    // boxes rather than one continuous top bar. A shared background with
+    // just a bottom border keeps it visually seamless with the bar above
+    // while still separating it from the manuscript canvas below.
     Surface(
         color = if (isDarkTheme) DarkSurface else Color.White,
-        tonalElevation = 1.dp,
-        border = androidx.compose.foundation.BorderStroke(
-            0.5.dp,
-            if (isDarkTheme) DarkBorder else Color(0xFFE2E8F0)
-        ),
         modifier = modifier
             .fillMaxWidth()
+            .drawBehind {
+                val strokeWidth = 0.5.dp.toPx()
+                drawLine(
+                    color = if (isDarkTheme) DarkBorder else Color(0xFFE2E8F0),
+                    start = androidx.compose.ui.geometry.Offset(0f, size.height - strokeWidth / 2),
+                    end = androidx.compose.ui.geometry.Offset(size.width, size.height - strokeWidth / 2),
+                    strokeWidth = strokeWidth
+                )
+            }
             .testTag("manuscript_progress_bar_container")
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 10.dp, vertical = 4.dp)
+                .padding(horizontal = 10.dp, vertical = 3.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -973,7 +984,7 @@ fun ManuscriptProgressBar(
                 }
             }
 
-            Spacer(modifier = Modifier.height(3.dp))
+            Spacer(modifier = Modifier.height(2.dp))
 
             // Visual Progress Track (Multi-color responsive gradient bar)
             Box(
