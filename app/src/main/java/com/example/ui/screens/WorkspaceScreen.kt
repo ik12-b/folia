@@ -12,7 +12,7 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.ui.draw.drawBehind
+import androidx.compose.foundation.drawBehind
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -222,6 +223,13 @@ fun WorkspaceScreen(
     }
 
     Scaffold(
+        // MainActivity's outer Scaffold already applies the status bar inset
+        // manually (topInset) to the Box wrapping this screen. Without this,
+        // Scaffold defaults to WindowInsets.safeDrawing and adds the SAME
+        // status bar height again here, on top of that -- the extra ~48dp
+        // empty gap that pushed the nav row/progress bar/toolbar down and
+        // made the whole top area look oversized.
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             // Delete confirmation dialog
