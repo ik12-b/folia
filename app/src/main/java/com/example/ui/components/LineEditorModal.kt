@@ -30,7 +30,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.verticalScrollimport androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
@@ -410,7 +410,7 @@ fun LineEditorModal(
                             Text(
                                 text = "Geser titik sudut, tepi garis, atau gunakan tombol D-Pad untuk menyetel batas teks secara presisi",
                                 fontSize = 10.sp,
-                                color = Color(0xFF94A3B8)
+                                color = Color(0xFF94A3B8),
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
@@ -756,7 +756,7 @@ fun LineEditorModal(
                                 modifier = Modifier
                                     .weight(1.1f)
                                     .fillMaxWidth()
-                                    .clip(RoundedCornerShape(.dp))
+                                    .clip(RoundedCornerShape(10.dp))
                                     .background(Color(0xFF020617))
                                     .border(1.dp, Color(0xFF1E293B), RoundedCornerShape(10.dp))
                             ) {
