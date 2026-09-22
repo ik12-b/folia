@@ -856,7 +856,7 @@ fun ViewerStudioView(
                     val isCurrentPage = pageIdx == activePageIndex
 
                     Box(
-                        modifier = Modifier .fillMaxSize()     
+                        modifier = Modifier .fillMaxSize(),   
                         contentAlignment = Alignment.Center
                     ) {
                         // PDF Page Container Sheet (Pure White Paper in Light Mode with crisp border & shadow)
